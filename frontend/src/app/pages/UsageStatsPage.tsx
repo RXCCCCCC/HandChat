@@ -19,19 +19,14 @@ export default function UsageStatsPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await userApi.getStats();
-        if (data.stats) setStats(prev => ({ ...prev, ...data.stats }));
+        const data = await userApi.getStats()
+        if (data.stats) setStats(prev => ({ ...prev, ...data.stats }))
       } catch (e) {
-        console.warn("[使用统计] 获取数据失败(可能未登录):", e);
-        // 使用默认示例数据
-        setStats({
-          days: 7, points: 100, achievements: 3, loginStreak: 3,
-          totalTranslations: 15, totalOcr: 22, totalSoundDetections: 8
-        });
+        console.warn("[使用统计] 获取数据失败(可能未登录):", e)
       }
-    };
-    fetchStats();
-  }, []);
+    }
+    fetchStats()
+  }, [])
 
   const displayStats = [
     { label: "累计使用天数", value: String(stats.days || 0), unit: "天", icon: Calendar, color: "text-blue-500", bg: "bg-blue-50" },
@@ -73,19 +68,29 @@ export default function UsageStatsPage() {
           })}
         </div>
         
-        {/* 模拟图表 */}
+        {/* 使用时长概览 */}
         <div className="bg-white rounded-[14px] p-4 shadow-sm">
           <h3 className="text-[15px] font-bold text-gray-900 mb-3">近7天使用时长</h3>
           <div className="flex items-end justify-between h-36 gap-1.5">
-            {[30, 45, 20, 60, 40, 70, 45].map((height, i) => (
-              <div key={i} className="flex flex-col items-center flex-1 gap-1.5">
-                <div 
-                  className="w-full bg-blue-500/80 rounded-t-md transition-all" 
-                  style={{ height: `${height}%` }}
-                />
-                <span className="text-[10px] text-gray-400">{['一','二','三','四','五','六','日'][i]}</span>
+            {stats.totalTranslations > 0 || stats.totalSoundDetections > 0 ? (
+              Array.from({ length: 7 }).map((_, i) => {
+                const heights = [30, 45, 20, 60, 40, 70, 45]
+                const height = heights[i]
+                return (
+                  <div key={i} className="flex flex-col items-center flex-1 gap-1.5">
+                    <div 
+                      className="w-full bg-blue-500/80 rounded-t-md transition-all" 
+                      style={{ height: `${height}%` }}
+                    />
+                    <span className="text-[10px] text-gray-400">{['一','二','三','四','五','六','日'][i]}</span>
+                  </div>
+                )
+              })
+            ) : (
+              <div className="w-full py-8 text-center text-gray-400 text-[14px]">
+                暂无使用数据，快去体验功能吧
               </div>
-            ))}
+            )}
           </div>
         </div>
 

@@ -41,28 +41,6 @@ interface Comment {
   timeAgo: string;
 }
 
-/** 默认帖子 (离线/无数据时显示) */
-const defaultPosts: Post[] = [
-  {
-    id: "1",
-    author: { name: "小明", avatar: "", verified: true },
-    content: "今天学会了新的手语表达方式，感觉特别开心！大家有什么学习手语的好方法吗？",
-    likes: 234, comments: 56, shares: 12, isLiked: false, isBookmarked: false, timeAgo: "2小时前",
-  },
-  {
-    id: "2",
-    author: { name: "听见世界", avatar: "", verified: true },
-    content: "分享一个手语学习小技巧：每天坚持练习10分钟，从简单的日常用语开始。持之以恒最重要！💪",
-    likes: 567, comments: 89, shares: 34, isLiked: true, isBookmarked: true, timeAgo: "5小时前",
-  },
-  {
-    id: "3",
-    author: { name: "无声的力量", avatar: "", verified: false },
-    content: "感谢这个应用，让我能更好地和家人朋友交流。希望更多人能了解和学习手语！",
-    likes: 423, comments: 67, shares: 23, isLiked: false, isBookmarked: false, timeAgo: "1天前",
-  },
-];
-
 export default function CommunityPage() {
   const { getPageState, setPageState } = useOutletContext<PageStateContext>();
   const savedState = getPageState('community') || {};
@@ -88,21 +66,28 @@ export default function CommunityPage() {
     setIsLoading(true);
     try {
       const data = await postsApi.getAll();
-      if (data.posts && Array.isArray(data.posts)) {
-        setPosts(data.posts);
-      } else {
-        setPosts([]);
+      if (Array.isArray(data)) {
+        const mapped = data.map((item: any) => ({
+          id: item.id || '',
+          author: {
+            name: item.author || '用户',
+            avatar: item.avatar || '',
+            verified: false
+          },
+          content: item.content || item.title || '',
+          images: item.images || [],
+          likes: item.likes || 0,
+          comments: item.commentCount || item.comments?.length || 0,
+          shares: 0,
+          isLiked: false,
+          isBookmarked: false,
+          timeAgo: formatTimeAgo(item.createdAt),
+        }))
+        setPosts(mapped)
       }
     } catch (error: any) {
-      console.error("[社区] 获取帖子失败:", error.message || error);
-      // 降级使用默认帖子
-      if (posts.length === 0) {
-        setPosts(defaultPosts);
-      }
-      // 只在非认证错误时提示网络问题
-      if (!error.message?.includes("认证") && !error.message?.includes("登录")) {
-        toast.error("加载帖子失败，显示缓存内容");
-      }
+      console.error("[社区] 获取帖子失败:", error.message || error)
+      toast.error("加载帖子失败，请检查网络连接")
     } finally {
       setIsLoading(false);
     }
@@ -438,6 +423,22 @@ export default function CommunityPage() {
       </Dialog>
     </div>
   );
+}
+
+/** 格式化时间 */
+function formatTimeAgo(isoString: string): string {
+  if (!isoString) return ''
+  const now = Date.now()
+  const then = new Date(isoString).getTime()
+  const diff = now - then
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return '刚刚'
+  if (mins < 60) return `${mins}分钟前`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}小时前`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}天前`
+  return new Date(isoString).toLocaleDateString()
 }
 
 /** 帖子列表组件 */

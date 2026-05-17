@@ -28,37 +28,21 @@ export default function PointsPage() {
         const [statsData, pointsData] = await Promise.allSettled([
           userApi.getStats(),
           userApi.getPointsHistory()
-        ]);
+        ])
         
         if (statsData.status === 'fulfilled' && statsData.value.stats) {
-          setTotalPoints(statsData.value.stats.points || 0);
-        } else {
-          setTotalPoints(100);
+          setTotalPoints(statsData.value.stats.points || 0)
         }
         
         if (pointsData.status === 'fulfilled' && pointsData.value.records) {
-          setHistory(pointsData.value.records);
-        } else {
-          // 使用默认数据
-          setHistory([
-            { id: "1", title: "每日登录", points: 10, date: "今天 08:30", type: "earn" },
-            { id: "2", title: "发布社区帖子", points: 20, date: "昨天 14:15", type: "earn" },
-            { id: "3", title: "完成学习打卡", points: 30, date: "3月14日", type: "earn" },
-          ]);
-          setTotalPoints(100);
+          setHistory(pointsData.value.records)
         }
       } catch (e) {
-        console.error("[积分页面] 获取数据失败:", e);
-        setHistory([
-          { id: "1", title: "每日登录", points: 10, date: "今天 08:30", type: "earn" },
-          { id: "2", title: "发布社区帖子", points: 20, date: "昨天 14:15", type: "earn" },
-          { id: "3", title: "完成学习打卡", points: 30, date: "3月14日", type: "earn" },
-        ]);
-        setTotalPoints(100);
+        console.error("[积分页面] 获取数据失败:", e)
       }
-    };
-    fetchData();
-  }, []);
+    }
+    fetchData()
+  }, [])
 
   return (
     <div className="min-h-screen pb-24" style={{ background: 'var(--app-background, #F2F2F7)' }}>

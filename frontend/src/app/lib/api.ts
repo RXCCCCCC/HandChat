@@ -10,8 +10,9 @@
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 import { supabase } from './supabase';
 
-/** API 基础地址 */
-const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-481f4acb`;
+/** API 基础地址 — 开发用本地 Express，生产用 Supabase Edge Function */
+const API_BASE = import.meta.env.VITE_API_URL
+  || `https://${projectId}.supabase.co/functions/v1/make-server-481f4acb`;
 
 // ============================================================
 // 基础工具函数
@@ -169,10 +170,9 @@ export const userApi = {
       return await apiCall('/user/profile', {
         method: 'PUT',
         body: JSON.stringify(data),
-      });
+      })
     } catch (e: any) {
-      // 降级：直接通过 Supabase 客户端更新 user_metadata
-      console.warn('[用户资料] API失败，降级到客户端直接更新:', e.message);
+      console.warn('[用户资料] API失败，降级到客户端直接更新:', e.message)
       const { error } = await supabase.auth.updateUser({
         data: {
           name: data.name,
@@ -181,38 +181,60 @@ export const userApi = {
           location: data.location,
           avatar_url: data.avatar_url,
         },
-      });
-      if (error) throw new Error(error.message);
-      return { success: true };
+      })
+      if (error) throw new Error(error.message)
+      return { success: true }
     }
+  },
+
+  /** 获取用户资料 */
+  async getProfile() {
+    return apiCall('/user/profile')
+  },
+
+  /** 获取用户设置 */
+  async getSettings() {
+    return apiCall('/user/settings')
+  },
+
+  /** 更新用户设置 */
+  async updateSettings(data: { notification?: boolean; vibration?: boolean; language?: string }) {
+    return apiCall('/user/settings', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
   },
 
   /** 获取用户统计数据 — 失败静默降级 */
   async getStats() {
     try {
-      return await apiCall('/user/stats');
+      const result = await apiCall('/user/stats')
+      return result
     } catch (e) {
-      console.warn('[统计] 获取失败，使用默认值');
+      console.warn('[统计] 获取失败，使用默认值')
       return {
         stats: {
-          days: Math.floor((Date.now() - (Date.now() - 7 * 86400000)) / 86400000),
+          days: 0,
           points: 0,
           achievements: 0,
           loginStreak: 1,
           totalTranslations: 0,
           totalOcr: 0,
           totalSoundDetections: 0,
+          postCount: 0,
+          followingCount: 0,
+          followerCount: 0,
         }
-      };
+      }
     }
   },
 
   /** 获取积分明细列表 */
   async getPointsHistory() {
     try {
-      return await apiCall('/user/points');
+      return await apiCall('/points/history')
     } catch (e) {
-      return { points: [] };
+      return { records: [] }
     }
   },
 
@@ -224,10 +246,9 @@ export const userApi = {
       return await apiCall('/user/action', {
         method: 'POST',
         body: JSON.stringify({ action }),
-      });
+      })
     } catch (e) {
-      // 积分记录失败不影响功能使用
-      return { success: false };
+      return { success: false }
     }
   },
 };
@@ -462,6 +483,42 @@ export const authApi = {
     return apiCall('/signup', {
       method: 'POST',
       body: JSON.stringify(data),
-    }, false);
+    }, false)
   },
-};
+}
+
+// ============================================================
+// 成就 API
+// ============================================================
+
+export const achievementsApi = {
+  async getAll() {
+    return apiCall('/achievements')
+  },
+}
+
+// ============================================================
+// 关注 API
+// ============================================================
+
+export const followApi = {
+  async getFollowerCount(userId: string) {
+    return apiCall(`/user/${userId}/followers/count`, {}, false)
+  },
+
+  async getFollowingCount(userId: string) {
+    return apiCall(`/user/${userId}/following/count`, {}, false)
+  },
+
+  async follow(userId: string) {
+    return apiCall(`/user/${userId}/follow`, { method: 'POST' })
+  },
+
+  async unfollow(userId: string) {
+    return apiCall(`/user/${userId}/follow`, { method: 'DELETE' })
+  },
+
+  async isFollowing(userId: string) {
+    return apiCall(`/user/${userId}/is-following`)
+  },
+}

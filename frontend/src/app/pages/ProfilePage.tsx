@@ -29,7 +29,7 @@ export default function ProfilePage() {
   const [vibration, setVibration] = useState(savedState.vibration !== undefined ? savedState.vibration : true);
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [userProfile, setUserProfile] = useState<{name: string; email: string; id: string; avatarUrl: string} | null>(null);
-  const [stats, setStats] = useState({ days: 0, points: 0, achievements: 0 });
+  const [stats, setStats] = useState({ days: 0, points: 0, achievements: 0, postCount: 0, followingCount: 0, followerCount: 0 });
 
   /** 获取用户信息和统计数据 */
   useEffect(() => {
@@ -56,12 +56,23 @@ export default function ProfilePage() {
             setStats({
               days: data.stats.days || 0,
               points: data.stats.points || 0,
-              achievements: data.stats.achievements || 0,
+              achievements: data.stats.achievementCount || data.stats.achievements || 0,
+              postCount: data.stats.postCount || 0,
+              followingCount: data.stats.followingCount || 0,
+              followerCount: data.stats.followerCount || 0,
             });
           }
         } catch (e: any) {
           console.warn("[个人中心] 获取统计失败 (使用默认值):", e.message || e);
-          // 静默降级，使用默认统计数据，不打扰用户
+        }
+
+        // 加载服务端设置
+        try {
+          const settings = await userApi.getSettings()
+          if (settings.notification !== undefined) setNotifications(settings.notification)
+          if (settings.vibration !== undefined) setVibration(settings.vibration)
+        } catch (e) {
+          // 使用本地状态
         }
       } catch (error: any) {
         console.error("[个人中心] 获取会话失败:", error);
@@ -96,12 +107,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setPageState('profile', { notifications, vibration });
+    userApi.updateSettings({ notification: notifications, vibration }).catch(() => {})
   }, [notifications, vibration, setPageState]);
 
   const userStats = [
-    { label: "帖子", value: 42, icon: FileText },
-    { label: "关注", value: 128, icon: TrendingUp },
-    { label: "粉丝", value: 356, icon: Award },
+    { label: "帖子", value: stats.postCount, icon: FileText },
+    { label: "关注", value: stats.followingCount, icon: TrendingUp },
+    { label: "粉丝", value: stats.followerCount, icon: Award },
   ];
 
   const settingsGroups = [
