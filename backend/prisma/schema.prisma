@@ -1,0 +1,31 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Session {
+  id        String        @id @default(uuid())
+  userId    String?
+  status    String        @default("active")
+  startedAt DateTime      @default(now())
+  endedAt   DateTime?
+  translations Translation[]
+}
+
+model Translation {
+  id           Int      @id @default(autoincrement())
+  sessionId    String
+  session      Session  @relation(fields: [sessionId], references: [id])
+  frameId      Int
+  text         String
+  confidence   Float
+  gestureLabel String?
+  type         String
+  createdAt    DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+}
