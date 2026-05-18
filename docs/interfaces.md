@@ -1,6 +1,6 @@
 # HandChat 全项目接口文档
 
-> **版本：** v1.1  
+> **版本：** v1.2  
 > **冻结日期：** 2026-05-17  
 > **维护规则：** 任何人对任何字段做任何修改，必须先更新本文档并在团队群 @所有人，再改代码。  
 > **冻结粒度：** 字段名 + 类型 + 必填/可选 全部冻结。数值范围标为"推荐值"的允许调整。  
@@ -895,6 +895,48 @@ Client                          Server
 
 ---
 
+### 4.3 接口实现状态矩阵（2026-05-17）
+
+| 端点 | 后端 | 前端 | 备注 |
+|------|------|------|------|
+| `GET /api/sessions` | ✅ | ✅ | |
+| `GET /api/sessions/:id` | ✅ | ✅ | |
+| `GET /api/sessions/:id/history` | ✅ | ✅ | |
+| **社区帖子** | | | |
+| `GET /api/posts` | ✅ | ✅ | |
+| `POST /api/posts` | ✅ | ✅ | title可选，缺省从content自动派生 |
+| `DELETE /api/posts/:id` | ✅ | ✅ | 仅帖主可操作 |
+| `POST /api/posts/:id/like` | ✅ | ✅ | 乐观更新 |
+| `POST /api/posts/:id/bookmark` | ⚠️ stub | ✅ | 后端仅返回 `{bookmarked:true}`，未持久化 |
+| `POST /api/posts/:id/comments` | ✅ | ✅ | 乐观更新 |
+| `GET /api/posts/:id/comments` | ✅ | ✅ | 分页 |
+| **成就** | | | |
+| `GET /api/achievements` | ✅ | ✅ | 5分钟内存缓存 |
+| **积分** | | | |
+| `GET /api/points` | ✅ | ✅ | balance + totalEarned |
+| `GET /api/points/history` | ✅ | ✅ | 分页+总数 |
+| **用户设置** | | | |
+| `GET /api/user/profile` | ✅ | ✅ | |
+| `PUT /api/user/profile` | ✅ | ✅ | 兼容 name→nickname, avatar_url→avatar |
+| `GET /api/user/settings` | ✅ | ✅ | notification/vibration/language |
+| `PUT /api/user/settings` | ✅ | ✅ | |
+| `GET /api/user/stats` | ✅ | ✅ | 10字段聚合，7路并行查询 |
+| **关注** | | | |
+| `GET /api/user/:id/followers/count` | ✅ | ✅ | |
+| `GET /api/user/:id/following/count` | ✅ | ✅ | |
+| `POST /api/user/:id/follow` | ✅ | ✅ | 乐观更新，防止自关注 |
+| `DELETE /api/user/:id/follow` | ✅ | ✅ | |
+| `GET /api/user/:id/is-following` | ✅ | ✅ | |
+| **🔲 未实现** | | | |
+| `GET /api/user/:id/basic` | ❌ | — | 🔲 用户基本信息批量查询（FollowListPage展示昵称需要） |
+| `GET /api/posts?feed=following` | ❌ | — | 🔲 关注用户动态流（社区"关注"Tab需要） |
+| `GET /api/user/stats/daily` | ❌ | — | 🔲 每日使用统计（UsageStatsPage 7天图表需要） |
+| `POST /api/posts/:id/bookmark` (完整实现) | ❌ | — | 🔲 收藏持久化（当前为stub） |
+
+> **图例：** ✅ 已实现 / ⚠️ 部分实现 / ❌ 未实现 / 🔲 预留规划
+
+---
+
 ## 五、认证与安全
 
 ### 5.1 认证方式
@@ -1000,6 +1042,7 @@ Client                          Server
 |------|------|---------|
 | 2026-05-14 | v1.0 | 初始版本，冻结核心数据协议 + WebSocket 协议 + 核心 REST API |
 | 2026-05-17 | v1.1 | 4.2 节从 🔲 预留升级为 🔒 冻结：补充 21 个辅助功能接口的完整文档（社区帖子6端点/成就1端点/积分2端点/用户资料5端点/用户统计1端点/关注粉丝5端点），含请求体、响应格式、错误码 |
+| 2026-05-17 | v1.2 | 新增 4.3 节"接口实现状态矩阵"：前后端28个端点逐项标注 ✅/⚠️/❌；新增4个 🔲 预留接口 |
 
 ---
 

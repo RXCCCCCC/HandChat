@@ -192,11 +192,20 @@ export default function ProfilePage() {
         <div className="bg-white rounded-[14px] shadow-sm overflow-hidden flex divide-x divide-gray-100 py-2">
           {userStats.map(stat => {
             const Icon = stat.icon;
+            const handleClick = () => {
+              if (stat.label === "关注") {
+                navigate("/profile/follow?tab=following");
+              } else if (stat.label === "粉丝") {
+                navigate("/profile/follow?tab=followers");
+              } else {
+                toast.info(`${stat.label}功能开发中`);
+              }
+            };
             return (
               <div 
                 key={stat.label} 
                 className="flex-1 flex flex-col items-center justify-center py-1.5 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                onClick={() => toast.info(`${stat.label}功能开发中`)}
+                onClick={handleClick}
               >
                 <span className="text-[18px] font-bold text-black mb-0.5">{stat.value}</span>
                 <div className="flex items-center gap-1 text-gray-500">

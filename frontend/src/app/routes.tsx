@@ -7,6 +7,7 @@ import SignLanguageSessionDetailPage from "./pages/SignLanguageSessionDetailPage
 import SoundDetectionPage from "./pages/SoundDetectionPage";
 import CommunityPage from "./pages/CommunityPage";
 import ProfilePage from "./pages/ProfilePage";
+import FollowListPage from "./pages/FollowListPage";
 import LoginPage from "./pages/LoginPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import HelpCenterPage from "./pages/HelpCenterPage";
@@ -23,13 +24,15 @@ export const router = createBrowserRouter([
     path: "/",
     Component: Root,
     children: [
-      { index: true, Component: HomePage },
+      { index: true, Component: SignLanguagePage },
       { path: "sign-language/history", Component: SignLanguageHistoryPage },
       { path: "sign-language/history/:sessionId", Component: SignLanguageSessionDetailPage },
       { path: "sign-language", Component: SignLanguagePage },
+      { path: "home", Component: HomePage },
       { path: "sound", Component: SoundDetectionPage },
       { path: "community", Component: CommunityPage },
       { path: "profile", Component: ProfilePage },
+      { path: "profile/follow", Component: FollowListPage },
       { path: "profile/edit", Component: EditProfilePage },
       { path: "help", Component: HelpCenterPage },
       { path: "privacy", Component: PrivacySettingsPage },

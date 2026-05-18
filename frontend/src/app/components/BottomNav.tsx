@@ -2,8 +2,8 @@ import { Link, useLocation } from "react-router";
 import { Camera, Hand, Volume2, MessageCircle, User } from "lucide-react";
 
 const navItems = [
-  { path: "/", icon: Camera, label: "识别" },
   { path: "/sign-language", icon: Hand, label: "手语" },
+  { path: "/home", icon: Camera, label: "识别" },
   { path: "/sound", icon: Volume2, label: "声音" },
   { path: "/community", icon: MessageCircle, label: "社区" },
   { path: "/profile", icon: User, label: "我的" },
